@@ -1,0 +1,1 @@
+return Component.create("health", {"remaining"}, {remaining = MAX_HEALTH})
