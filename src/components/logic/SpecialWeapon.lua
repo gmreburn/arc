@@ -1,0 +1,1 @@
+return Component.create("specialWeapon", WEAPON_MISSILE)
