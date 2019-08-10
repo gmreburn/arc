@@ -1,5 +1,6 @@
 -- Systems
 local DrawSystem = require("systems/draw/DrawSystem")
+local NetworkSystem = require("systems/NetworkSystem")
 
 -- Events
 local KeyPressed = require("events/KeyPressed")
@@ -15,8 +16,14 @@ function GameState:load()
     self.engine = Engine()
     self.eventmanager = EventManager()
 
+    self.engine:addSystem(NetworkSystem())
+    -- self.engine:addSystem(MapSystem())
+    -- self.engine:addSystem(PlayerSystem())
+    -- self.engine:addSystem(HUDSystem())    
     self.engine:addSystem(DrawSystem())
 
+    -- local networkListener = require('systems/NetworkSystem')
+    -- self.eventmanager.addListener("PrimaryWeaponFired", networkListener, networkListener.onPrimaryWeaponFired)
 end
 
 function GameState:update(dt)
@@ -37,7 +44,34 @@ function GameState:draw()
 end
 
 function GameState:keypressed(key, isrepeat)
-    self.eventmanager:fireEvent(KeyPressed(key, isrepeat))
+    server:send('keypressed '..playerid..' '..key)
+    -- self.eventmanager:fireEvent(KeyPressed(key, isrepeat))
+end
+
+function GameState:mousepressed(x, y, button)
+    server:send('mousepressed '..playerid..' '..x..' '..y..' '..button)
+
+    -- if(button == 1) then
+    --     hero:firePrimaryWeapon()
+    -- elseif(button == 2) then
+    --     hero:fireSecondaryWeapon()
+    -- elseif(button == 3 and hero:get('specialWeapon') ~= WEAPON_GRENADE) then
+    --     love.audio.play(love.audio.newSource('sound/GOT_MORT.wav', 'stream'))
+    --     hero:selectWeapon(WEAPON_GRENADE)
+    -- end
+end
+
+function GameState:wheelmoved(x, y)
+    -- only send if changed?
+    server:send('wheelmoved '..playerid..' '..x..' '..y)
+
+    -- if(y > 0 and hero:get('specialWeapon') ~= WEAPON_MISSILE) then
+    --     love.audio.play(love.audio.newSource('sound/GOT_MISS.wav', 'stream'))
+    --     hero:selectWeapon(WEAPON_MISSILE)
+    -- elseif(y < 0 and hero:get('specialWeapon') ~= WEAPON_BOUNCY) then
+    --     love.audio.play(love.audio.newSource('sound/GOT_BOUN.wav', 'stream'))
+    --     hero:selectWeapon(WEAPON_BOUNCY)
+    -- end
 end
 
 return GameState
