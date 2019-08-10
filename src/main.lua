@@ -66,6 +66,7 @@ function love.load()
 end
 
 function love.update(dt)
+    require("lib/lovebird").update()
     stack:current():update(dt)
 end
 
