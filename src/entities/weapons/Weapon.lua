@@ -1,7 +1,7 @@
-local PositionComponent = require('components/Position')
-local VelocityComponent = require('components/Velocity')
-local TeamComponent = require('components/Team')
-local ZIndexComponent = require('components/ZIndex')
+local PositionComponent = require('components/physic/Position')
+local VelocityComponent = require('components/physic/Velocity')
+local TeamComponent = require('components/logic/Team')
+local ZIndexComponent = require('components/logic/ZIndex')
 
 WeaponEntity = class("WeaponEntity", Entity)
 

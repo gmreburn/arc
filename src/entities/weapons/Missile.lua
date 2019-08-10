@@ -1,7 +1,7 @@
 local BodyComponent = require('components/physic/body')
 local VelocityComponent = require('components/physic/velocity')
 
-local WeaponEntity = require('entities/weapon')
+local WeaponEntity = require('entities/weapons/Weapon')
 
 local resources = require('core/Resources')
 
