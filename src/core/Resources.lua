@@ -36,12 +36,12 @@ function Resources:load(threaded)
         self.fontQueue[name] = nil
     end
     for name, src in pairs(self.musicQueue) do
-        self.music[name] = love.audio.newSource(src)
+        self.music[name] = love.audio.newSource(src, "static")
         self.musicQueue[name] = nil
     end
 
     for name, src in pairs(self.soundQueue) do
-        self.sounds[name] = love.audio.newSource(src)
+        self.sounds[name] = love.audio.newSource(src, "static")
         self.soundQueue[name] = nil
     end
 
