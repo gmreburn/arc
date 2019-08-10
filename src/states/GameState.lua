@@ -1,3 +1,5 @@
+local hc = require('lib/HC')
+
 -- Systems
 local DrawSystem = require("systems/draw/DrawSystem")
 local NetworkSystem = require("systems/NetworkSystem")
@@ -13,6 +15,7 @@ function GameState:load()
     min_dt = 1/30
     self.next_time = love.timer.getTime()
 
+    hc.resetHash(SHIP_SIZE*4)
     self.engine = Engine()
     self.eventmanager = EventManager()
 
@@ -44,13 +47,14 @@ function GameState:draw()
 end
 
 function GameState:keypressed(key, isrepeat)
-    server:send('keypressed '..playerid..' '..key)
+    -- server:send('keypressed '..playerid..' '..key)
     -- self.eventmanager:fireEvent(KeyPressed(key, isrepeat))
 end
 
 function GameState:mousepressed(x, y, button)
-    server:send('mousepressed '..playerid..' '..x..' '..y..' '..button)
-
+    -- server:send('mousepressed '..playerid..' '..x..' '..y..' '..button)
+    -- self.eventmanager:fireEvent(KeyPressed(key, isrepeat))
+    
     -- if(button == 1) then
     --     hero:firePrimaryWeapon()
     -- elseif(button == 2) then

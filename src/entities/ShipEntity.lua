@@ -1,30 +1,30 @@
-local hc = require 'libs/HC'
+local hc = require('lib/HC')
 
-local BodyComponent = require('components/Body')
-local EnergyComponent = require('components/Wnergy')
-local HealthComponent = require('components/Health')
-local PositionComponent = require('components/Position')
-local TeamComponent = require('components/Ream')
-local SpriteComponent = require('components/Sprite')
-local VelocityComponent = require('components/Velocity')
-local ZIndexComponent = require('components/ZIndex')
+local BodyComponent = require('components/physic/Body')
+local EnergyComponent = require('components/logic/Energy')
+local HealthComponent = require('components/logic/Health')
+local PositionComponent = require('components/physic/Position')
+-- local TeamComponent = require('components/logic/Team')
+local SpriteComponent = require('components/graphic/Sprite')
+local VelocityComponent = require('components/physic/Velocity')
+local ZIndexComponent = require('components/logic/ZIndex')
+local MetaComponent = require('components/logic/Meta')
 
 local Bouncy = require('entities/weapons/Bouncy')
 local Laser = require('entities/weapons/Laser')
 local Missile = require('entities/weapons/Missile')
 local Mortar = require('entities/weapons/Mortar')
 
-local resources = require('core/Resources')
-
 ShipEntity = class("ShipEntity", Entity)
 
-function ShipEntity:initialize(x, y, team)
+function ShipEntity:initialize(id, x, y, team)
     Entity.initialize(self)
+    self:add(MetaComponent(id, team))
     self:add(BodyComponent(hc.circle(x, y, SHIP_SIZE / 2), self, SHIP_SIZE / 2, ShipEntity.onCollisionWith))
     self:add(EnergyComponent())
     self:add(HealthComponent())
     self:add(PositionComponent(x, y))
-    self:add(TeamComponent(team))
+    -- self:add(TeamComponent(team))
     self:add(SpriteComponent(resources.images.tuna, SHIP_SIZE * HEADING_NONE, 292 + SHIP_SIZE * team, SHIP_SIZE, SHIP_SIZE))
     self:add(VelocityComponent())
     self:add(ZIndexComponent(3))
@@ -64,14 +64,6 @@ function ShipEntity:move(x_input, y_input)
     self:get('sprite').quad:setViewport(SHIP_SIZE*(heading-1), 292+SHIP_SIZE*(self:get('team').value), SHIP_SIZE, SHIP_SIZE)
 end
 
-function ShipEntity:fireWeapon(x, y, weapon)
-    if(weapon = nil or weapon == WEAPON_LASER) then
-        self:firePrimaryWeapon(x, y)
-    else
-        self:fireSecondaryWeapon(x, y)
-    end
-end
-
 function ShipEntity:firePrimaryWeapon(x, y)
     if(self:get('energy').remaining > 1) then
         local position = self:get('position')
@@ -91,6 +83,12 @@ function ShipEntity:fireSecondaryWeapon(x, y, weapon)
         else
             engine:addEntity(Bouncy(position.x, position.y, math.atan2(position.x - x, position.y - y)))
         end
+    end
+end
+
+function ShipEntity:selectWeapon(weapon)
+    if(weapon ~= self:get('meta').activeWeapon and weapon == WEAPON_MISSILE or weapon == WEAPON_MORTAR or weapon == WEAPON_GRENADE) then
+        self:get('meta').activeWeapon = weapon
     end
 end
 
