@@ -8,15 +8,39 @@ lovetoys.initialize({globals = true, debug = true})
 require("core/Stackhelper")
 require("core/Resources")
 
-local MenuState = require("states/MenuState")
+local GameState = require("states/GameState")
+
+local function getTransparentTuna()
+    rgb2raw = function (float) return math.floor(float*255+0.5) end
+    local tunaImageData = love.image.newImageData("tuna.bmp")
+    tunaImageData:mapPixel(function(x,y,r,g,b,a)
+        -- remove magic transparent color
+        if(rgb2raw(r) == 199 and rgb2raw(g) == 43 and rgb2raw(b) == 87) then
+            a = 0
+        end
+
+        -- change font color from black to white so love2d can modify its color
+        if(x < 583 and y > 1201 and y < 1217) then
+            if(r == 0 and g == 0 and b == 0) then
+                r = 255
+                g = 255
+                b = 255
+                a = 255
+            end
+        end
+        
+        return r, g, b, a
+    end)
+    return tunaImageData
+end
 
 function love.load()
-    -- love.audio.play(love.audio.newSource("sound/SYSINIT.WAV", "queue"))
+    love.audio.play(love.audio.newSource("sound/SYSINIT.WAV", "queue"))
 
     resources = Resources()
     resources:addImage("farplane", "Farplane.bmp")
     resources:addImage("tiles", "Tiles.bmp")
-    -- resources:addImage("tuna", tunaImageData)
+    resources:addImage("tuna", getTransparentTuna())
     resources:addSound("ARMORLO", "sound/ARMORLO.WAV")
     resources:addSound("BASE", "sound/BASE.WAV")
     resources:addSound("BLUE", "sound/BLUE.WAV")
@@ -62,7 +86,7 @@ function love.load()
     resources:load()
 
     stack = StackHelper()
-    stack:push(MenuState())
+    stack:push(GameState())
 end
 
 function love.update(dt)
