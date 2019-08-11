@@ -1,17 +1,21 @@
 
 function love.conf(t)
-    t.title = "game"        -- The title of the window the game is in (string)
+    t.title = "Attack Retrieve Capture (ARC)"        -- The title of the window the game is in (string)
+    t.window.display = 2
+    t.window.width = 800
+    t.window.height = 600
+
     t.author = ""        -- The author of the game (string)
     t.url = ""                 -- The website of the game (string)
     t.identity = nil            -- The name of the save directory (string)
     t.version = "11.2"         -- The LÖVE version this game was made for (string)
     t.console = false           -- Attach a console (boolean, Windows only)
-    t.window.width = 0       -- The window width (number)
-    t.window.height = 0       -- The window height (number)
-    t.window.fullscreen = true  -- Enable fullwindow (boolean)
+    -- t.window.width = 0       -- The window width (number)
+    -- t.window.height = 0       -- The window height (number)
+    t.window.fullscreen = false  -- Enable fullwindow (boolean)
     t.window.vsync = true       -- Enable vertical sync (boolean)
     t.window.fsaa = 0           -- The number of FSAA-buffers (number)
-    t.modules.joystick = true   -- Enable the joystick module (boolean)
+    -- t.modules.joystick = true   -- Enable the joystick module (boolean)
     t.modules.audio = true      -- Enable the audio module (boolean)
     t.modules.keyboard = true   -- Enable the keyboard module (boolean)
     t.modules.event = true      -- Enable the event module (boolean)
@@ -20,5 +24,5 @@ function love.conf(t)
     t.modules.timer = true      -- Enable the timer module (boolean)
     t.modules.mouse = true      -- Enable the mouse module (boolean)
     t.modules.sound = true      -- Enable the sound module (boolean)
-    t.modules.physics = true    -- Enable the physics module (boolean)
+    -- t.modules.physics = true    -- Enable the physics module (boolean)
 end
