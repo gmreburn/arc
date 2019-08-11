@@ -5,7 +5,6 @@ function StackHelper:initialize()
     self.backCounter = 0
 end
 
-
 function StackHelper:current()
     if #self.states == 0 then return nil
     
@@ -14,12 +13,10 @@ function StackHelper:current()
     end
 end
 
-
 function StackHelper:push(element)
     table.insert(self.states, element)
     self:current():load()   
 end
-
 
 function StackHelper:pop()
     if self:current() then 
@@ -32,8 +29,7 @@ function StackHelper:popload()
         table.remove(self.states, #self.states)
     end
     self:current():load()
-end
- 
+end 
 
 function StackHelper:draw()
     for i = 0, #self.states-1 , 1 do
@@ -47,7 +43,6 @@ function StackHelper:draw()
         self.states[#self.states-i]:draw() 
     end 
 end
-
 
 function StackHelper:update(dt)
     if self:current() then self:current():update(dt) end
