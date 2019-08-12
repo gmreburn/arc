@@ -2,7 +2,7 @@ local GameState = require("states/GameState")
 
 -- State superclass
 local State = require("core/State")
-local InitializeState = class("InitializeState", State)
+local InitializingState = class("InitializingState", State)
 
 local farplane = require('farplane')()
 local function getTransparentTuna()
@@ -29,8 +29,8 @@ local function getTransparentTuna()
     return tunaImageData
 end
 
-function InitializeState:load()
-    love.audio.play(love.audio.newSource("sound/SYSINIT.WAV", "queue"))
+function InitializingState:load()
+    love.audio.play(love.audio.newSource("sound/SYSINIT.WAV", "static"))
 
     self.engine = Engine()
     self.eventmanager = EventManager()
@@ -77,7 +77,7 @@ function InitializeState:load()
     resources:addSound("TEAMWINS", "sound/TEAMWINS.WAV")
     resources:addSound("Unmuzzle", "sound/Unmuzzle.WAV")
     resources:addSound("WARP", "sound/WARP.WAV")
-    -- resources:addSound("WELCOME", "sound/WELCOME.WAV")
+    resources:addSound("WELCOME", "sound/WELCOME.WAV")
     resources:addSound("WIN", "sound/WIN.WAV")
     resources:addSound("YELLOW", "sound/YELLOW.WAV")
 
@@ -86,13 +86,13 @@ function InitializeState:load()
     stack:push(GameState())
 end
 
-function InitializeState:update(dt)
+function InitializingState:update(dt)
     self.engine:update(dt)
 end
 
-function InitializeState:draw()
+function InitializingState:draw()
     farplane:draw()
     self.engine:draw()
 end
 
-return InitializeState
+return InitializingState
