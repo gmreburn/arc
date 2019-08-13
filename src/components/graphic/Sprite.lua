@@ -1,8 +1,7 @@
-local Drawable = require('components/graphic/Drawable')
-local Sprite = class("Sprite", Drawable)
+local Sprite = class("Sprite")
 
-function Sprite:initialize(resource, quad, index, sx, sy, ox, oy)
-    Drawable.initialize(resource, index, sx, sy, ox, oy)
+function Sprite:initialize(resource, quad)
+    self.resource = resource
     self.quad = quad
 end
 
