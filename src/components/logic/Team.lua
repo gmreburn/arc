@@ -1,1 +1,1 @@
-return Component.create("Team", TEAM_NEUTRAL)
+return Component.create("Team", {"value"}, {value = TEAM_NEUTRAL})
