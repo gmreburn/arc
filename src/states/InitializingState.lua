@@ -1,10 +1,11 @@
-local GameState = require("states/GameState")
+-- Systems
+local FarplaneSystem = require("systems/draw/FarplaneSystem")
 
--- State superclass
+-- States
 local State = require("core/State")
+local HeroState = require('states/HeroState')
 local InitializingState = class("InitializingState", State)
 
-local farplane = require('farplane')()
 local function getTransparentTuna()
     rgb2raw = function (float) return math.floor(float*255+0.5) end
     local tunaImageData = love.image.newImageData("tuna.bmp")
@@ -34,6 +35,7 @@ function InitializingState:load()
 
     self.engine = Engine()
     self.eventmanager = EventManager()
+    self.engine:addSystem(FarplaneSystem())
 
     resources = Resources()
     resources:addImage("farplane", "Farplane.bmp")
@@ -83,7 +85,7 @@ function InitializingState:load()
 
     resources:load()
     
-    stack:push(GameState())
+    stack:push(HeroState())
 end
 
 function InitializingState:update(dt)
@@ -91,7 +93,6 @@ function InitializingState:update(dt)
 end
 
 function InitializingState:draw()
-    farplane:draw()
     self.engine:draw()
 end
 
