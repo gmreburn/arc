@@ -1,1 +1,1 @@
-return Component.create("position", {"x", "y"}, {x = 0, y = 0})
+return Component.create("Position", {"x", "y"}, {x = 0, y = 0})
