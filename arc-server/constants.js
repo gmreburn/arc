@@ -51,5 +51,9 @@ module.exports = Object.freeze({
     TEAM_CHANGED: 6,
     VELOCITY_CHANGED: 7,
     FLAG_CAPTURED: 8,
-    SWITCH_FLIPPED: 9
+    FLAG_TAKEN: 9,
+    FLAG_DROPPED: 10,
+    SWITCH_FLIPPED: 11,
+    DIE: 12,
+    DAMAGE_TAKEN: 13
 });
