@@ -1,13 +1,15 @@
 local hc = require('lib/HC')
 
-local BodyComponent = require('components/physic/Body')
-local EnergyComponent = require('components/logic/Energy')
-local HealthComponent = require('components/logic/Health')
-local PositionComponent = require('components/physic/Position')
-local SpriteComponent = require('components/graphic/Sprite')
-local VelocityComponent = require('components/physic/Velocity')
-local ZIndexComponent = require('components/logic/ZIndex')
-local MetaComponent = require('components/logic/Meta')
+local Body = require('components/physic/Body')
+local Energy = require('components/logic/Energy')
+local Health = require('components/logic/Health')
+local Position = require('components/physic/Position')
+local Sprite = require('components/graphic/Sprite')
+local Tuna = require('components/graphic/Tuna')
+local Team = require('components/logic/Team')
+local Velocity = require('components/physic/Velocity')
+local ZIndex = require('components/logic/ZIndex')
+local Meta = require('components/logic/Meta')
 
 local Bouncy = require('entities/weapons/Bouncy')
 local Laser = require('entities/weapons/Laser')
@@ -18,14 +20,16 @@ ShipEntity = class("ShipEntity", Entity)
 
 function ShipEntity:initialize(id, x, y, team)
     Entity.initialize(self)
-    self:add(MetaComponent(id, team))
-    self:add(BodyComponent(hc.circle(x, y, SHIP_SIZE / 2), self, SHIP_SIZE / 2, ShipEntity.onCollisionWith))
-    self:add(EnergyComponent())
-    self:add(HealthComponent())
-    self:add(PositionComponent(x, y))
-    self:add(SpriteComponent(resources.images.tuna, SHIP_SIZE * HEADING_NONE, 292 + SHIP_SIZE * team, SHIP_SIZE, SHIP_SIZE))
-    self:add(VelocityComponent())
-    self:add(ZIndexComponent(3))
+
+    self:add(Meta(id))
+    self:add(Body(hc.circle(x, y, SHIP_SIZE / 2), self, SHIP_SIZE / 2, ShipEntity.onCollisionWith))
+    self:add(Energy())
+    self:add(Health())
+    self:add(Position(x, y))
+    self:add(Sprite(resources.images.tuna, love.graphics.newQuad(SHIP_SIZE * HEADING_NONE, 292 + SHIP_SIZE * team, SHIP_SIZE, SHIP_SIZE, resources.images.tuna:getDimensions())))
+    self:add(Team(team))
+    self:add(Velocity())
+    self:add(ZIndex(3))
 end
 
 function ShipEntity:onCollisionWith(entity, delta)
@@ -63,17 +67,17 @@ function ShipEntity:move(x_input, y_input)
 end
 
 function ShipEntity:firePrimaryWeapon(x, y)
-    if(self:get('energy').remaining > 1) then
-        local position = self:get('position')
+    if(self:get('Energy').remaining > 1) then
+        local position = self:get('Position')
         
-        self:get('energy').remaining = self:get('energy').remaining - 1
+        self:get('Energy').remaining = self:get('Energy').remaining - 1
         engine:addEntity(Laser(position.x, position.y, math.atan2(position.x - x, position.y - y)))
     end
 end
 
 function ShipEntity:fireSecondaryWeapon(x, y, weapon)
-    if(self:get('energy').remaining > 2) then
-        local position = self:get('position')
+    if(self:get('Energy').remaining > 2) then
+        local position = self:get('Position')
         if(weapon == WEAPON_MISSILE) then
             engine:addEntity(Missile(position.x, position.y, math.atan2(position.x - x, position.y - y)))
         elseif(weapon == WEAPON_GRENADE) then
