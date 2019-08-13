@@ -1,1 +1,1 @@
-return Component.create("smoke")
+return Component.create("Smoke")

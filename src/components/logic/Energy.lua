@@ -1,1 +1,1 @@
-return Component.create("energy", {"remaining"}, {remaining = MAX_ENERGY})
+return Component.create("Energy", {"remaining"}, {remaining = MAX_ENERGY})

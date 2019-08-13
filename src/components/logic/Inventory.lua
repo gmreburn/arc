@@ -1,1 +1,1 @@
-return Component.create("inventory", {"missiles", "mortars", "bouncies"}, {missiles = 0, mortars = 0, bouncies = 0})
+return Component.create("Inventory", {"missiles", "mortars", "bouncies"}, {missiles = 0, mortars = 0, bouncies = 0})

@@ -1,4 +1,4 @@
-local Meta = class("meta")
+local Meta = class("Meta")
 
 function Meta:initialize(id, team)
     self.id = id

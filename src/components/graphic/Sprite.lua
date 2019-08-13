@@ -1,14 +1,9 @@
-local Sprite = class("sprite")
-local lg = love.graphics
+local Drawable = require('components/graphic/Drawable')
+local Sprite = class("Sprite", Drawable)
 
-function Sprite:initialize(resource, x, y, size)
-    self.resource = resource
-
-    if(type(x) == "number") then
-        self.quad =  lg.newQuad(x, y, size, size, resource:getDimensions())
-    else
-        self.quad = x
-    end
+function Sprite:initialize(resource, quad, index, sx, sy, ox, oy)
+    Drawable.initialize(resource, index, sx, sy, ox, oy)
+    self.quad = quad
 end
 
 return Sprite

@@ -1,1 +1,1 @@
-return Component.create("specialWeapon", WEAPON_MISSILE)
+return Component.create("SpecialWeapon", WEAPON_MISSILE)

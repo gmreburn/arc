@@ -1,1 +1,1 @@
-return Component.create("flag", TEAM_NEUTRAL)
+return Component.create("Flag", TEAM_NEUTRAL)
