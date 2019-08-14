@@ -14,10 +14,10 @@ module.exports = Object.freeze({
     MAX_GRENADES: 2,
     MAX_BOUNCIES: 3,
 
-    WEAPON_LASER: 0,
-    WEAPON_MISSILE: 1,
-    WEAPON_GRENADE: 2,
-    WEAPON_BOUNCY: 3,
+    WEAPON_MISSILE: 0,
+    WEAPON_GRENADE: 1,
+    WEAPON_BOUNCY: 2,
+    WEAPON_LASER: 3,
 
     HEADING_EAST: 0,
     HEADING_NORTHEAST: 1,
