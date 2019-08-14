@@ -1,0 +1,1 @@
+return Component.create("Rectangle2", {"width", "height", "red", "green", "blue", "alpha"})
