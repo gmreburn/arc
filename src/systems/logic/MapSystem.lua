@@ -1,15 +1,13 @@
 local MapSystem = class("MapSystem", System)
 local bit = require('bit')
 
-
 local function is_animation(tileData)
-    return bit.band(love.data.unpack("<B", tileData), 1) == 1
+    return bit.band(love.data.unpack("<B", tileData), 256) == 1
 end
 local function is_wall(tileNumber)
     return false
 end
 
--- function HeadsUpDisplaySystem:initialize(eventManager)
 function MapSystem:loadMap(mapFile, hash)
     if(love.filesystem.exists('maps/' .. mapFile .. '.map') == false) then -- todo: use love.filesystem.getInfo
         -- todo: download the map from server
@@ -78,19 +76,50 @@ function MapSystem:loadMap(mapFile, hash)
             local tileData = love.data.newByteData(mapData, pointer, 2)
 
             if(is_animation(tileData)) then
-                tile = love.data.unpack("<I1", tileData)
-                animationOffset = love.data.unpack("<xI1", tileData)
+                self.tiles[h][w] = {
+                    offset = bit.band(love.data.unpack("<Bx", tileData), 255),
+                    tile = love.data.unpack("<xB", tileData)
+                } 
             else
-                tile = love.data.unpack("<I2", tileData)
+                self.tiles[h][w] = {
+                    tile = love.data.unpack("<I2", tileData)
+                }
             end
-            self.tiles[h][w] = tile
+            
             pointer = pointer + 2
         end
     end
 end
 
-function MapSystem:draw()
+function MapSystem:initialize()
+    System.initialize(self)
+    self.tile = {}
+    self.map_display_w = love.graphics.getWidth()/TILE_SIZE
+    self.map_display_h = love.graphics.getHeight()/TILE_SIZE
+    self.map_x = 0
+    self.map_y = 0
+    self.map_offset_x = -15
+    self.map_offset_y = -15
+  
+    local tilenumber = 0
+    for row=0,99 do
+      for column=0,39 do
+        self.tile[tilenumber] = love.graphics.newQuad(column*TILE_SIZE,row*TILE_SIZE, TILE_SIZE,TILE_SIZE, resources.images.tiles:getDimensions())
+        tilenumber = tilenumber + 1
+      end
+    end
+end
 
+function MapSystem:draw()
+    for y=1, self.map_display_h do
+        for x=1, self.map_display_w do
+            love.graphics.draw( 
+                resources.images.tiles,
+                self.tile[self.tiles[y][x].tile],
+                (x*TILE_SIZE)+self.map_offset_x,
+                (y*TILE_SIZE)+self.map_offset_y )
+        end
+    end
 end
 
 -- function MapSystem:requires()
