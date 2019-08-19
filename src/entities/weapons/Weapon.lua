@@ -12,4 +12,8 @@ function WeaponEntity:initialize(x, y, angle, team)
     self:add(ZIndexComponent(2))
 end
 
+function WeaponEntity:destroy()
+    stack:current().engine:removeEntity(self)
+end
+
 return WeaponEntity
