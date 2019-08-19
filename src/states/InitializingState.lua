@@ -6,10 +6,11 @@ local State = require("core/State")
 local HeroState = require('states/HeroState')
 local InitializingState = class("InitializingState", State)
 
-local function getTransparentTuna()
-    rgb2raw = function (float) return math.floor(float*255+0.5) end
-    local tunaImageData = love.image.newImageData("tuna.bmp")
-    tunaImageData:mapPixel(function(x,y,r,g,b,a)
+local function applyTransparency(path)
+    local rgb2raw = function (float) return math.floor(float*255+0.5) end
+    local imageData = love.image.newImageData(path)
+
+    imageData:mapPixel(function(x,y,r,g,b,a)
         -- remove magic transparent color
         if(rgb2raw(r) == 199 and rgb2raw(g) == 43 and rgb2raw(b) == 87) then
             a = 0
@@ -27,20 +28,16 @@ local function getTransparentTuna()
         
         return r, g, b, a
     end)
-    return tunaImageData
+
+    return imageData    
 end
 
 function InitializingState:load()
-    love.audio.play(love.audio.newSource("sound/SYSINIT.WAV", "static"))
-
-    self.engine = Engine()
-    self.eventmanager = EventManager()
-    self.engine:addSystem(FarplaneSystem())
-
+    -- love.audio.play(love.audio.newSource("sound/SYSINIT.WAV", "static"))
     resources = Resources()
+    resources:addImage("tiles", applyTransparency("Tiles.bmp"))
+    resources:addImage("tuna", applyTransparency("tuna.bmp"))
     resources:addImage("farplane", "Farplane.bmp")
-    resources:addImage("tiles", "Tiles.bmp")
-    resources:addImage("tuna", getTransparentTuna())
     resources:addSound("ARMORLO", "sound/ARMORLO.WAV")
     resources:addSound("BASE", "sound/BASE.WAV")
     resources:addSound("BLUE", "sound/BLUE.WAV")
@@ -82,9 +79,12 @@ function InitializingState:load()
     resources:addSound("WELCOME", "sound/WELCOME.WAV")
     resources:addSound("WIN", "sound/WIN.WAV")
     resources:addSound("YELLOW", "sound/YELLOW.WAV")
-
     resources:load()
-    
+
+    self.engine = Engine()
+    self.eventmanager = EventManager()
+    self.engine:addSystem(FarplaneSystem())
+
     stack:push(HeroState())
 end
 
