@@ -8,19 +8,27 @@ lovetoys.initialize({globals = true, debug = true})
 require("core/Stackhelper")
 require("core/Resources")
 
-local InitializingState = require("states/InitializingState")
 local next_time = nil
+lovebird = require("lib/lovebird")
+lovebird.update()
 
 function love.load()
     min_dt = 1 / 30
     next_time = love.timer.getTime()
 
     stack = StackHelper()
-    stack:push(InitializingState())
+
+    local server = false
+    if(server) then
+        stack:push(require("states/ServerState"))
+    else
+        stack:push(require("states/InitializingState"))
+        lovebird.port = 8001
+    end
 end
 
 function love.update(dt)
-    require("lib/lovebird").update()
+    lovebird.update()
     stack:current():update(dt)
     next_time = next_time + min_dt
 end
