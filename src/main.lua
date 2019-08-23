@@ -9,7 +9,9 @@ require("core/Stackhelper")
 require("core/Resources")
 
 local next_time = nil
+local min_dt = nil
 lovebird = require("lib/lovebird")
+server = false
 lovebird.update()
 
 function love.load()
@@ -18,11 +20,10 @@ function love.load()
 
     stack = StackHelper()
 
-    local server = false
+    stack:push(require("states/InitializingState"))
     if(server) then
-        stack:push(require("states/ServerState"))
+        lovebird.port = 8000
     else
-        stack:push(require("states/InitializingState"))
         lovebird.port = 8001
     end
 end
