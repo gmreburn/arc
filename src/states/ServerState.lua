@@ -1,4 +1,9 @@
-local ServerState 
+local hc = require('lib/HC')
+local ShipEntity = require("entities/ShipEntity")
+local Laser = require("entities/weapons/Laser")
+local Missile = require("entities/weapons/Missile")
+local Mortar = require("entities/weapons/Mortar")
+local Bouncy = require("entities/weapons/Bouncy")
 
 local State = require("core/State")
 local ServerState = class("ServerState", State)
@@ -6,122 +11,158 @@ local ServerState = class("ServerState", State)
 local enet = require "enet"
 local host = nil
 local players = {}
+local next_time = nil
 
-function ServerState:load()
+-- todo:
+-- FLAG_CAPTURED
+-- FLAG_TAKEN
+-- FLAG_DROPPED
+-- SWITCH_FLIPPED
+-- DIED
+-- DAMAGE_TAKEN
+
+function ServerState:load(mapFile)
+    min_dt = 1 / 64
+    next_time = love.timer.getTime()
+    local MapSystem = require("systems/logic/MapSystem")
+
+    hc.resetHash(SHIP_SIZE*4)
+    self.engine = Engine()
+    self.eventmanager = EventManager()
+    
     host = enet.host_create("localhost:3000")
+    self.engine:addSystem(MapSystem())
+
     -- load map
+    self.map = mapFile
+    self.engine.systemRegistry["MapSystem"]:loadMap(mapFile)
 end
 
-local onConnect = function(event, peer)
-    print(event.peer, "connected.")
+local fireWeaponRequest = function(weapon, playerid, x, y, theta)    
+    local player = players[playerid]
 
-    local secret = love.math.random( )
-    local playerid = love.data.encode("string", "hex", love.data.hash("md5", secret))
-    local payload = {
-        type = GAME_INITIALIZE,
-        position = {x = 0, y = 0}, -- create vector at dead pen
-        team = TEAM_GREEN,
-        map = {
-            name = "aplgo",
-            hash = ""
-        },
-        players = nil
-    }
-    players[playerid] = {
-        position = payload.position,
-        velocity = {},
-        username = event.username,
-        team = payload.team,
-        entity = ShipEntity(playerid, tonumber(players[playerid].position.x), tonumber(players[playerid].position.y), tonumber(players[playerid].team))
-    }
+    if(player == nil) then
+        -- player not found - disconnect this peer?
+        return
+    end
 
-    stack:current().engine:addEntity(players[playerid].entity)
+    -- check energy level
+    if(player.entity:get("energy").remaining >= LASER_ENERGY_COST) then
+        local startX = player.position.x / 2
+        local startY = player.position.y / 2
+        
+        stack:current().engine:addEntity(Laser(startX, startY, theta, player.team))
+    end
 
-    peer:send(JSON.stringify(payload))
-    host:broadcast(JSON.stringify({
-        type = PLAYER_JOINED,
-        username = event.username
-    }))
+    -- send to all connected clients
+    host:broadcast(love.data.pack("string", "<BBBBB", weapon, playerid, x, y, th))
 end
 
-local onMessage = function(command, data, peer)
-    print("Got message: ", event.data, event.peer)
+function ServerState:onConnect(data, peer)
+    print(peer, "connected.")
+    -- todo - start timer and disconnect peer if not receive GAME_INITIALIZE within 3 seconds?
+end
+local weapons = {"LASER", "MISSILE", "MORTAR", "BOUNCY"}
+
+function ServerState:onMessage(command, data, peer)
+    print("Got message: ", command, peer)
 
     if(command == GAME_INITIALIZE) then
-        -- do we need this on the server? use it to change the map?
-    elseif(command == FIRE_LASER) then
+        -- todo: remove JSON, use binary
+        local usernameLen, index = love.data.unpack("xB", data)
+        local username = love.data.unpack("s"..usernameLen, data, index)
+
+        local position = {x = 0, y = 0}
+        local team = TEAM_RED
+        local secret = love.math.random(0, 0xFFFFFFFF) -- 4B
+        local playerid = love.data.encode("string", "hex", love.data.hash("md5", secret))
+        print("playerid size",string.len(playerid))
+        players[playerid] = {
+            username = username,
+            entity = ShipEntity(playerid, position.x, position.y, tonumber(team)),
+            peer_id = peer:connect_id()
+        }
+        
+        local payloads = {
+            GAME_INITIALIZE = love.data.pack("string", "<BnBBs"..string.len(self.map), GAME_INITIALIZE, secret, team, string.len(self.map), self.map),
+            PLAYER_JOINED = love.data.pack("string", "<BBBs"..usernameLen, PLAYER_JOINED, team, usernameLen, username)
+        }
+
+        stack:current().engine:addEntity(players[playerid].entity)
+        
+        peer:send(payloads.GAME_INITIALIZE)
+        host:broadcast(payloads.PLAYER_JOINED)
+    elseif(weapons[command] ~= nil) then
         local playerid = love.data.encode("string", "hex", love.data.hash("md5", love.data.unpack("<n", data)))
-        local player = players[playerid]
         local x = love.data.unpack("<xn", data)
         local y = love.data.unpack("<xxn", data)
         local theta = love.data.unpack("<xxxn", data)
 
-        -- check energy level
-        if(player.energy >= 1) then
-            local startX = player.position.x / 2
-            local startY = player.position.y / 2
-            
-            stack:current().engine:addEntity(Laser(startX, startY, theta, player.team))
-        end
-
-        -- send to all connected clients
-        host:broadcast(love.data.pack(FIRE_LASER, weapon, playerid, x, y, th))
-    elseif(command == FIRE_MISSILE) then
-    elseif(command == FIRE_MORTAR) then
-    elseif(command == FIRE_BOUNCY) then
+        fireWeaponRequest(command, playerid, x, y, theta)
     elseif(command == TEAM_CHANGED) then
         local playerid =  love.data.encode("string", "hex", love.data.hash("md5", love.data.unpack("<n", data)))
         local team = love.data.unpack("<xn", data)
 
-        host:broadcast(love.data.pack(TEAM_CHANGED, playerid, team))
+        host:broadcast(love.data.pack("string", TEAM_CHANGED, playerid, team))
     elseif(command == VELOCITY_CHANGED) then
         local playerid =  love.data.encode("string", "hex", love.data.hash("md5", love.data.unpack("<n", data)))
-        local x = love.data.unpack("<xn", data)
-        local y = love.data.unpack("<xxn", data)
+        local velocity = players[playerid].entity:get("velocity")
 
-        players[playerid].velocity.x = x
-        players[playerid].velocity.y = y
+        velocity.x = love.data.unpack("<xn", data)
+        velocity.y = love.data.unpack("<xxn", data)
 
-        host:broadcast(love.data.pack(VELOCITY_CHANGED, playerid, x, y))
-    elseif(command == FLAG_CAPTURED) then
-        -- server should be sending this, no need to receive this message
-    elseif(command == FLAG_TAKEN) then
-        -- server should be sending this, no need to receive this message
-    elseif(command == FLAG_DROPPED) then
-        -- server should be sending this, no need to receive this message
-    elseif(command == SWITCH_FLIPPED) then
-        -- server should be sending this, no need to receive this message
-    elseif(command == DIE) then
-        -- server should be sending this, no need to receive this message
-    elseif(command == DAMAGE_TAKEN) then
-        -- server should be sending this, no need to receive this message
+        host:broadcast(love.data.pack("string", VELOCITY_CHANGED, playerid, velocity.x, velocity.y))
     end
 end
 
-local onDisconnect = function(event)
+function ServerState:onDisconnect(peer)
     print(event.peer, "disconnected.")
     -- todo: find playerid
-    stack:current().engine:removeEntity(players[playerid].entity)
-    host:broadcast(JSON.stringify({
-        type = PLAYER_LEFT,
-        username = event.username
-    }))
+    
+    for i, player in pairs(players) do
+        if(players[i].peer_id == peer:connect_id()) then
+            if(players[i].entity ~= nil) then
+                stack:current().engine:removeEntity(players[playerid].entity)
+            end
+
+            host:broadcast(love.data.pack("string", "<BBs"..string.len(players[i].username), PLAYER_LEFT, string.len(players[i].username), players[i].username))
+        end
+    end
 end
 
-function ServerState:update()
+function ServerState:getState()
+
+end
+
+function ServerState:update(dt)
+    next_time = next_time + min_dt
+
     if(host ~= nil) then
         local event = host:service(100)
 
         if(event ~= nil) then
             if event.type == "receive" then
-                onMessage(love.data.unpack("<B", event.data),  love.data.newByteData(event.data, 1), data.peer)
+                local cmd, index = love.data.unpack("<B", event.data)
+                self:onMessage(cmd, love.data.newByteData(event.data, index), event.peer)
             elseif event.type == "connect" then
-                onConnect(event, peer)
+                self:onConnect(event.peer)
             elseif event.type == "disconnect" then
-                onDisconnect(event, peer)
+                self:onDisconnect(event.peer)
             end
         end
+
+        local worldState = nil
+        host:broadcast(love.data.pack("string", "<B", WORLD_STATE), 1, "unreliable")
     end
+
+    -- tick rate
+    local cur_time = love.timer.getTime()
+    if next_time <= cur_time then
+        next_time = cur_time
+        return
+    end
+
+   love.timer.sleep(next_time - cur_time)
 end
 
 return ServerState
