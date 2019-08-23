@@ -13,9 +13,9 @@ function StackHelper:current()
     end
 end
 
-function StackHelper:push(element)
+function StackHelper:push(element, ...)
     table.insert(self.states, element)
-    self:current():load()   
+    self:current():load(...)   
 end
 
 function StackHelper:pop()
