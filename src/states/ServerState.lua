@@ -12,6 +12,7 @@ local enet = require "enet"
 local host = nil
 local players = {}
 local next_time = nil
+local worldState = {}
 
 -- todo:
 -- FLAG_CAPTURED
@@ -39,7 +40,7 @@ function ServerState:load(mapFile)
 end
 
 local fireWeaponRequest = function(weapon, playerid, x, y, theta)    
-    local player = players[playerid]
+    local player = players[playerid].entity
 
     if(player == nil) then
         -- player not found - disconnect this peer?
@@ -47,11 +48,12 @@ local fireWeaponRequest = function(weapon, playerid, x, y, theta)
     end
 
     -- check energy level
-    if(player.entity:get("energy").remaining >= LASER_ENERGY_COST) then
-        local startX = player.position.x / 2
-        local startY = player.position.y / 2
+    if(player:get("energy").remaining >= LASER_ENERGY_COST) then
+        local position = player:get("position")
+        local startX = position.x / 2
+        local startY = position.y / 2
         
-        stack:current().engine:addEntity(Laser(startX, startY, theta, player.team))
+        stack:current().engine:addEntity(Laser(startX, startY, theta, player:get("team").value))
     end
 
     -- send to all connected clients
@@ -75,8 +77,8 @@ function ServerState:onMessage(command, data, peer)
         local position = {x = 0, y = 0}
         local team = TEAM_RED
         local secret = love.math.random(0, 0xFFFFFFFF) -- 4B
-        local playerid = love.data.encode("string", "hex", love.data.hash("md5", secret))
-        print("playerid size",string.len(playerid))
+        local playerid = love.data.encode("string", "hex", love.data.hash("md5", secret)) -- 32B
+        
         players[playerid] = {
             username = username,
             entity = ShipEntity(playerid, position.x, position.y, tonumber(team)),
@@ -105,7 +107,7 @@ function ServerState:onMessage(command, data, peer)
 
         host:broadcast(love.data.pack("string", TEAM_CHANGED, playerid, team))
     elseif(command == VELOCITY_CHANGED) then
-        local playerid =  love.data.encode("string", "hex", love.data.hash("md5", love.data.unpack("<n", data)))
+        local playerid =  love.data.encode("string", "hex", love.data.hash("md5", love.data.unpack("<B", data)))
         local velocity = players[playerid].entity:get("velocity")
 
         velocity.x = love.data.unpack("<xn", data)
@@ -131,16 +133,24 @@ function ServerState:onDisconnect(peer)
 end
 
 function ServerState:getState()
+    for i, player in pairs(players) do
+        local position = players[i].entity:get("position")
+        local velocity = players[i].entity:get("velocity")
+        local health = players[i].entity:get("health").remaining
+        local energy = players[i].entity:get("energy").remaining
 
+        
+    end
 end
 
 function ServerState:update(dt)
     next_time = next_time + min_dt
 
     if(host ~= nil) then
-        local event = host:service(100)
-
-        if(event ~= nil) then
+        local event = host:service()
+        -- todo: this logic may be defective.. we can get stuck processing events and have no time to send ticks
+        -- loop while there is an event 
+        while event do
             if event.type == "receive" then
                 local cmd, index = love.data.unpack("<B", event.data)
                 self:onMessage(cmd, love.data.newByteData(event.data, index), event.peer)
@@ -149,6 +159,7 @@ function ServerState:update(dt)
             elseif event.type == "disconnect" then
                 self:onDisconnect(event.peer)
             end
+            event = host:service()
         end
 
         local worldState = nil
