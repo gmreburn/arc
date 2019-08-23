@@ -85,7 +85,11 @@ function InitializingState:load()
     self.eventmanager = EventManager()
     self.engine:addSystem(FarplaneSystem())
 
-    stack:push(HeroState())
+    if(server) then
+        stack:push(require("states/ServerState"), "test")
+    else
+        stack:push(HeroState())
+    end
 end
 
 function InitializingState:update(dt)
