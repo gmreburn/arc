@@ -7,10 +7,12 @@ local resources = require('core/Resources')
 
 Bouncy = class("Bouncy", WeaponEntity)
 
-function Bouncy:initialize(x, y, angle, team)
-    WeaponEntity.initialize(x, y, angle, team)
+Bouncy.EnergyCost = BOUNCY_ENERGY_COST
 
-    self:add(BodyComponent(hc.circle(x, y, SHIP_SIZE / 2), self, SHIP_SIZE / 2, Bouncy.onCollisionWith))
+function Bouncy:initialize(position, theta, team)
+    WeaponEntity.initialize(position, team)
+
+    self:add(BodyComponent(hc.circle(position.x, position.y, SHIP_SIZE / 2), self, SHIP_SIZE / 2, Bouncy.onCollisionWith))
     self:add(VelocityComponent(BOUNCY_VELOCITY * math.cos(theta), BOUNCY_VELOCITY * math.sin(theta)))
 
     love.audio.play(love.audio.newSource('sound/BOUNSHOT.wav', 'stream'))

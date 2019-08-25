@@ -7,10 +7,12 @@ local resources = require('core/Resources')
 
 Missile = class("Missile", WeaponEntity)
 
-function Missile:initialize(x, y, angle, team)
-    WeaponEntity.initialize(x, y, angle, team)
+Missile.EnergyCost = MISSILE_ENERGY_COST
 
-    self:add(BodyComponent(hc.circle(x, y, SHIP_SIZE / 4), self, SHIP_SIZE / 4, Missile.onCollisionWith))
+function Missile:initialize(position, theta, team)
+    WeaponEntity.initialize(position, team)
+
+    self:add(BodyComponent(hc.circle(position.x, position.y, SHIP_SIZE / 4), self, SHIP_SIZE / 4, Missile.onCollisionWith))
     self:add(VelocityComponent(MISSILE_VELOCITY * math.cos(theta), MISSILE_VELOCITY * math.sin(theta)))
 
     love.audio.play(love.audio.newSource('sound/Missile.wav', 'stream'))

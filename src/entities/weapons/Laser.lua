@@ -7,10 +7,12 @@ local resources = require('core/Resources')
 
 Laser = class("Laser", WeaponEntity)
 
-function Laser:initialize(x, y, theta, team)
-    WeaponEntity.initialize(x, y, theta, team)
+Laser.EnergyCost = LASER_ENERGY_COST
 
-    self:add(BodyComponent(hc.circle(x, y, SHIP_SIZE / 8), self, SHIP_SIZE / 8, Laser.onCollisionWith))
+function Laser:initialize(position, theta, team)
+    WeaponEntity.initialize(position, team)
+
+    self:add(BodyComponent(hc.circle(position.x, position.y, SHIP_SIZE / 8), self, SHIP_SIZE / 8, Laser.onCollisionWith))
     self:add(VelocityComponent(LASER_VELOCITY * math.cos(theta), LASER_VELOCITY * math.sin(theta)))
 
     love.audio.play(love.audio.newSource('sound/laser.wav', 'stream'))

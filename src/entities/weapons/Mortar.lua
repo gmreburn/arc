@@ -7,10 +7,12 @@ local resources = require('core/Resources')
 
 Mortar = class("Mortar", WeaponEntity)
 
-function Mortar:initialize(start_x, start_y, end_x, end_y, angle, team)
-    WeaponEntity.initialize(start_x, start_y, angle, team)
+Mortar.EnergyCost = MORTAR_ENERGY_COST
 
-    self:add(BodyComponent(hc.circle(start_x, start_y, SHIP_SIZE / 2), self, SHIP_SIZE / 2, Mortar.onCollisionWith))
+function Mortar:initialize(origin_position, dest_position, team)
+    WeaponEntity.initialize(origin_position, team)
+
+    self:add(BodyComponent(hc.circle(origin_position.x, origin_position.y, SHIP_SIZE / 2), self, SHIP_SIZE / 2, Mortar.onCollisionWith))
     self:add(VelocityComponent(MORTAR_VELOCITY, MORTAR_VELOCITY))
 
     love.audio.play(love.audio.newSource('sound/MORTLNCH.wav', 'stream'))
