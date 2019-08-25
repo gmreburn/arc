@@ -14,10 +14,11 @@ lovebird = require("lib/lovebird")
 server = false
 lovebird.update()
 
-function love.load()
+function love.load(arg)
     min_dt = 1 / 30
     next_time = love.timer.getTime()
 
+    serverStack = StackHelper()
     stack = StackHelper()
 
     stack:push(require("states/InitializingState"))
@@ -30,11 +31,13 @@ end
 
 function love.update(dt)
     lovebird.update()
+    serverStack:current():update(dt)
     stack:current():update(dt)
     next_time = next_time + min_dt
 end
 
 function love.draw()
+    serverStack:draw()
     stack:draw()
 
     local cur_time = love.timer.getTime()
